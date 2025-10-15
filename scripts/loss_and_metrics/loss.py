@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from torch.autograd import grad
 from torch.autograd.forward_ad import dual_level, make_dual, unpack_dual
  
 from math import sqrt, prod
