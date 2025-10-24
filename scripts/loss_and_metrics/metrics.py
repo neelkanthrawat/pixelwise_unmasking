@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 
 import numpy as np
 import scipy
@@ -57,7 +58,7 @@ def calculate_fid(real_batch, synthetic_batch, feature_extractor, extract_layer=
     fid = diff.dot(diff) + np.trace(cov_real + cov_synthetic - 2 * covmean)
     return fid
 
-def get_fid_for_model(model, batchsize=1000, digit=4, extract_layer=2, verbose=False, cond=None, zero_one_range=False):
+def get_fid_for_model(model,device, batchsize=1000, digit=4, extract_layer=2, verbose=False, cond=None, zero_one_range=False, zero_one_fid_feature_extractor=None, fid_feature_extractor=None):
     if zero_one_range:
       _, fid_test_loader = get_mnist_dataloaders(batchsize=batchsize, pixelwidth=28, digit=digit, zero_one_range=True)
     else:
@@ -69,9 +70,20 @@ def get_fid_for_model(model, batchsize=1000, digit=4, extract_layer=2, verbose=F
 
     # Calculate FID score
     if zero_one_range: #Z.B. zero_one_fid_feature_extractor = ImprovedCNN().to(device): THIS IS HOW HE IMPLEMENTED IT
-      assert zero_one_fid_feature_extractor.is_trained, "Feature extractor is not trained hoe"
+      assert zero_one_fid_feature_extractor.is_trained, "Feature extractor is not trained"
       fid_score = calculate_fid(real_batch, model_batch, zero_one_fid_feature_extractor, extract_layer=extract_layer, verbose=verbose)
     else: 
-      assert fid_feature_extractor.is_trained, "Feature extractor is not trained hoe"
+      assert fid_feature_extractor.is_trained, "Feature extractor is not trained"
       fid_score = calculate_fid(real_batch, model_batch, fid_feature_extractor, extract_layer=extract_layer, verbose=verbose)
     return fid_score
+
+def entropy_of_batch_of_probs(probs):
+    return -torch.sum(probs * torch.log(probs), axis=1)
+
+def get_inception_score_for_model(model, batchsize, fid_feature_extractor, std=False):
+    samples = model.sample(batchsize)
+    predictions = fid_feature_extractor(samples, extract_layer=20)
+    predictions = nn.functional.softmax(predictions, dim=1)
+    if std:
+        return torch.mean(entropy_of_batch_of_probs(predictions)).cpu().detach().numpy(), torch.std(entropy_of_batch_of_probs(predictions)).cpu().detach().numpy()
+    else: return torch.mean(entropy_of_batch_of_probs(predictions)).cpu().detach().numpy()
