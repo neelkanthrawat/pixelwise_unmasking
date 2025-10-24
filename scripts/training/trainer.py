@@ -16,6 +16,8 @@ from data.dataloaders_related import get_mnist_dataloaders
 #losses
 from loss_and_metrics.loss import fff_loss, mmd_inverse_multi_quadratic
 from loss_and_metrics.metrics import get_fid_for_model, get_inception_score_for_model
+#  this one is in the 
+from evaluation.evaluation_related_fn import check_acfff_classification_output
 
 def test_model(model, test_loader, device='cpu'):
     model.eval()  # Set model to evaluation mode
@@ -55,11 +57,13 @@ def train_model_mnist(model,
                       #pca_instance=None,
                       pca_instance:PCA=None,
                       reconstruction_error_from_pca=False,
-                      check_acfff_classification_quality=True):
+                      check_acfff_classification_quality=True,
+                      fid_feature_extractor=None):
 
     assert model_name in ["inn", "fff", "afff", "freia"]
     if model_name in ["fff", "afff"]:
-        assert beta_r is not None
+        assert beta_r is not None,f'beta_r cannot be NONE for {model_name} model'
+        assert fid_feature_extractor is not None,f'fid_feature_extractor cannot be NONE for {model_name} model. send in some feature extractor in here.'
         if model_name == "afff":
             assert beta_a is not None
 
@@ -164,7 +168,7 @@ def train_model_mnist(model,
                 if model_name == "freia":
                     verbose = True
                 else: verbose = False
-                fid_history.append(get_fid_for_model(model, digit=digit, verbose=verbose, cond=cond, batchsize=batchsize))
+                fid_history.append(get_fid_for_model(model,device=device, digit=digit, verbose=verbose, cond=cond, batchsize=batchsize, fid_feature_extractor=fid_feature_extractor))
                 fid_epochs.append(epoch)
             if check_acfff_classification_quality:
                 probs_per_class = check_acfff_classification_output(model)
@@ -174,7 +178,7 @@ def train_model_mnist(model,
         if (epoch+1)%10 == 0:
             model.eval()
             if calculate_is:
-                is_history.append(get_inception_score_for_model(model, batchsize=batchsize))
+                is_history.append(get_inception_score_for_model(model, batchsize=batchsize, fid_feature_extractor=fid_feature_extractor))
                 is_epochs.append(epoch)
             if calculate_logprobs:
                 lp_history.append(model.logprob(batch).cpu().detach().numpy().mean())
