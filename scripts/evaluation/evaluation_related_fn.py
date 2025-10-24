@@ -1,19 +1,9 @@
 import torch
 import torch.nn as nn
+import numpy as np
 
 from data.dataloaders_related import get_mnist_dataloaders
 
-
-def entropy_of_batch_of_probs(probs):
-    return -torch.sum(probs * torch.log(probs), axis=1)
-
-def get_inception_score_for_model(model, batchsize, std=False): 
-    samples = model.sample(batchsize)
-    predictions = fid_feature_extractor(samples, extract_layer=20)#fid_feature_extractor=ImprovedCNN().to(device) : look into it later
-    predictions = nn.functional.softmax(predictions, dim=1)
-    if std:
-        return torch.mean(entropy_of_batch_of_probs(predictions)).cpu().detach().numpy(), torch.std(entropy_of_batch_of_probs(predictions)).cpu().detach().numpy()
-    else: return torch.mean(entropy_of_batch_of_probs(predictions)).cpu().detach().numpy()
     
 # function for checking density across different digits
 def check_acfff_classification_output(model, batchsize=500, device='cpu'):
