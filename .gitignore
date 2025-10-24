@@ -214,3 +214,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+
+# extra stuff I want to ignore
+scripts/notebooks/data/
