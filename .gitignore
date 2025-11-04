@@ -217,4 +217,7 @@ __marimo__/
 
 
 # extra stuff I want to ignore
-scripts/notebooks/data/
+scripts/notebooks/data/ 
+# other notebooks
+MFFF_Tutorial.ipynb
+mfff_mnist.ipynb
