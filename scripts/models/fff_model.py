@@ -329,8 +329,10 @@ class FreeFormFlow(torch.nn.Module):
         if rev: return self.decoder(x_or_z)
         else: return self.encoder(x_or_z)
 
-    def sample(self, num_samples, cond=None):
+    def sample(self, num_samples:int, cond:torch.Tensor= None, return_z:bool = False) -> torch.Tensor:
         z = torch.normal(mean=torch.zeros((num_samples, self.input_dim)), std=torch.ones((num_samples, self.input_dim))).to(self.device)
+        if return_z:
+            return z, self.decoder(z)[..., :self.data_dims]
         return self.decoder(z)[..., :self.data_dims]
 
     def logprob(self, x, exact=True, jac_of_enc=True, cond=None, verbose=False):
