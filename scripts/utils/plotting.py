@@ -4,6 +4,16 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 from data.dataloaders_related  import get_mnist_dataloaders
 
+# function for simple plotting
+def plot_sample(model_in, pixelwidth=28, zero_one_range = True):
+    plt.figure(figsize=(15,3))
+    axs = axs.flatten()
+    sample = model_in.sample(1)
+    if zero_one_range: vmin, vamx = 0., 1.
+    else: vmin, vmax = -0.447, 2.852
+    plt.matshow(sample.detach().numpy().reshape((pixelwidth,pixelwidth)), vmin=vmin, vmax=vmax)
+    
+
 
 # function for plotting samples during training
 def five_samples(model_snapshots, pixelwidth=28, zero_one_range=True):
