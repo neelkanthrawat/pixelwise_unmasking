@@ -7,7 +7,7 @@ from typing import Literal, Union, Tuple, Any
 # from models.resnet import resnet
 # from models.brazy import brazy_encoder, brazy_decoder
 
-from models.fff_model import resnet, MLP, brazy_encoder, brazy_decoder
+from models.fff_model import resnet, MLP, brazy_encoder, brazy_decoder, cond_conv_decoder, cond_conv_encoder
 
 # define the dataclass for different architecture configurations
 @dataclass
@@ -34,10 +34,23 @@ class BrazyConfig:
     fff_batchnorm: bool
     fff_dropout: float
 
+@dataclass
+class CondConfig:
+    fff_c_small:int
+    fff_f1_dim:int=512, 
+    fff_f2_dim:int=1024, 
+    fff_input_dim:int=28*28,
+    fff_output_dim:int=28*28, 
+    fff_batchnorm:bool=True, 
+    fff_third_conv:bool=False, 
+    fff_cond_dim:int=10,
+    fff_dropout:float=0.0
+
+
 
 def get_encoder_and_decoder(
-    fff_architecture: Literal["mlp", "resnet", "brazy"],
-    config: Union[MLPConfig, ResNetConfig, BrazyConfig],
+    fff_architecture: Literal["mlp", "resnet", "brazy", "conditional"],
+    config: Union[MLPConfig, ResNetConfig, BrazyConfig, CondConfig],
     device
 ) -> Tuple[Any, Any]:
     
@@ -93,7 +106,30 @@ def get_encoder_and_decoder(
             batchnorm=config.fff_batchnorm,
             p_dropout=config.fff_dropout
         )
-
+    elif fff_architecture == "conditional":
+        assert isinstance(config, CondConfig), "config entered should be the instance of CondConfig"
+        encoder = cond_conv_encoder(
+            c_small=config.fff_c_small, 
+            f1_dim=config.fff_f1_dim,
+            f2_dim=config.fff_f2_dim,
+            input_dim=config.fff_input_dim,
+            output_dim=config.fff_output_dim,
+            cond_dim=config.fff_cond_dim,
+            batchnorm=config.fff_batchnorm,
+            third_conv=config.fff_third_conv,
+            p_dropout=config.fff_dropout
+        )
+        decoder = cond_conv_decoder(
+            c_small=config.fff_c_small, 
+            f1_dim=config.fff_f1_dim,
+            f2_dim=config.fff_f2_dim,
+            input_dim=config.fff_input_dim,
+            output_dim=config.fff_output_dim,
+            cond_dim=config.fff_cond_dim,
+            batchnorm=config.fff_batchnorm,
+            third_conv=config.fff_third_conv,
+            p_dropout=config.fff_dropout
+        )
     else:
         raise ValueError(f"Unknown architecture: {fff_architecture}")
 
