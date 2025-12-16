@@ -65,7 +65,13 @@ class MLP(nn.Module):
 
 # defining encoder and decoder
 class brazy_encoder(nn.Module):
-    def __init__(self, c_small=32, f1_dim=512, f2_dim=1024, input_dim=28*28, output_dim=28*28, batchnorm=True, third_conv=False, p_dropout=0.0):
+    def __init__(self, c_small:int=32, 
+                f1_dim:int=512, f2_dim:int=1024, 
+                input_dim:int=28*28, 
+                output_dim:int=28*28, 
+                batchnorm:bool=True, 
+                third_conv:bool=False, 
+                p_dropout:float=0.0) -> None:
         super().__init__()
         self.input_dim = input_dim
         self.output_dim = output_dim
@@ -99,7 +105,7 @@ class brazy_encoder(nn.Module):
             self.batchnorm2 = nn.Identity()
 
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = x.reshape(-1, 1, 28, 28)
         x = nn.functional.relu(self.batchnorm1(self.conv1(x)))
         x = nn.functional.max_pool2d(x, 2)
