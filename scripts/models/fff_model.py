@@ -180,8 +180,15 @@ class brazy_decoder(nn.Module):
         return z
 
 class cond_conv_encoder(nn.Module):
-    def __init__(self, c_small=32, f1_dim=512, f2_dim=1024, input_dim=28*28,
-                 output_dim=28*28, batchnorm=True, third_conv=False, cond_dim=10,
+    def __init__(self, 
+                 c_small=32, 
+                 f1_dim=512, 
+                 f2_dim=1024, 
+                 input_dim=28*28,
+                 output_dim=28*28, 
+                 batchnorm=True, 
+                 third_conv=False, 
+                 cond_dim=10,
                  p_dropout=0.0):
         super().__init__()
         self.input_dim = input_dim
@@ -243,8 +250,15 @@ class cond_conv_encoder(nn.Module):
         return torch.cat([x, cond], dim=-1)
 
 class cond_conv_decoder(nn.Module):
-    def __init__(self, c_small=32, f1_dim=512, f2_dim=1024, input_dim=28*28,
-                 output_dim=28*28, batchnorm=True, third_conv=True, cond_dim=10,
+    def __init__(self, 
+                 c_small=32, 
+                 f1_dim=512, 
+                 f2_dim=1024, 
+                 input_dim=28*28,
+                 output_dim=28*28, 
+                 batchnorm=True, 
+                 third_conv=True, 
+                 cond_dim=10,
                  p_dropout=0.0):
         super().__init__()
 
@@ -335,8 +349,10 @@ class FreeFormFlow(torch.nn.Module):
         if rev: return self.decoder(x_or_z)
         else: return self.encoder(x_or_z)
 
-    def sample(self, num_samples, cond=None):
+    def sample(self, num_samples:int, cond:torch.Tensor= None, return_z:bool = False) -> torch.Tensor:
         z = torch.normal(mean=torch.zeros((num_samples, self.input_dim)), std=torch.ones((num_samples, self.input_dim))).to(self.device)
+        if return_z:
+            return z, self.decoder(z)[..., :self.data_dims]
         return self.decoder(z)[..., :self.data_dims]
 
     def logprob(self, x, exact=True, jac_of_enc=True, cond=None, verbose=False):
@@ -369,7 +385,7 @@ class FreeFormFlow(torch.nn.Module):
 #### CONDITIONAL FREE FORM FLOW ####
 ## undefined: l.nll_surrogate
 ## UPDATE (fixed:added above): nll_surrogate is defined in the cell under the section: loss.py
-class condFreeFormFlow(torch.nn.Module):
+class CondFreeFormFlow(torch.nn.Module):
     def __init__(self, encoder, decoder, cond_dim=10, data_dims=2, device="cpu"):
         super().__init__()
         #self.encoder = MLP(input_dim, hidden_dim, output_dim, n_hidden_layers=n_hidden_layers)
@@ -392,7 +408,10 @@ class condFreeFormFlow(torch.nn.Module):
         assert cond.shape[0] == batchsize
         assert cond.shape[1] == self.cond_dim
         num_samples = cond.shape[0]
-        z = torch.normal(mean=torch.zeros((num_samples, self.input_dim)), std=torch.ones((num_samples, self.input_dim))).to(self.device)
+        z = torch.normal(
+                         mean=torch.zeros((num_samples, self.input_dim)), 
+                         std=torch.ones((num_samples, self.input_dim))
+                         ).to(self.device)
         return self.decoder(z, cond)[..., :self.data_dims]
 
     def logprob(self, x, cond, exact=True, jac_of_enc=True):
