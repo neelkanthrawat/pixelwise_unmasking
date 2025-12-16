@@ -8,7 +8,13 @@ from data.dataloaders_related import get_mnist_dataloaders
 # fid_feature_extractor and zero_fid_feature_extractor  is not defined below. we  need to fix that thing
 # device is  also not defined
 
-def calculate_fid(real_batch, synthetic_batch, feature_extractor, extract_layer=2, normalize_features=False, verbose=False):
+def calculate_fid(real_batch, 
+                  synthetic_batch, 
+                  feature_extractor, 
+                  extract_layer=2, 
+                  normalize_features=False, 
+                  verbose=False
+                  ):
     feature_extractor.eval()  # Set model to evaluation mode
 
     # Extract features for real and synthetic batches
@@ -58,7 +64,17 @@ def calculate_fid(real_batch, synthetic_batch, feature_extractor, extract_layer=
     fid = diff.dot(diff) + np.trace(cov_real + cov_synthetic - 2 * covmean)
     return fid
 
-def get_fid_for_model(model,device, batchsize=1000, digit=4, extract_layer=2, verbose=False, cond=None, zero_one_range=False, zero_one_fid_feature_extractor=None, fid_feature_extractor=None):
+def get_fid_for_model(model,
+                      device,
+                      batchsize=1000, 
+                      digit=4, 
+                      extract_layer=2, 
+                      verbose=False, 
+                      cond=None, 
+                      zero_one_range=False, 
+                      zero_one_fid_feature_extractor=None, 
+                      fid_feature_extractor=None,
+                      ):
     if zero_one_range:
       _, fid_test_loader = get_mnist_dataloaders(batchsize=batchsize, pixelwidth=28, digit=digit, zero_one_range=True)
     else:
